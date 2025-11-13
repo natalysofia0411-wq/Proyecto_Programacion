@@ -1,0 +1,2 @@
+- Implement wave scoring
+- Implement Goro
