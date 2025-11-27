@@ -3,7 +3,6 @@ import sys
 
 from core.game import Game
 from config.settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
-from utils.helpers import save_score
 
 def main():
     pygame.init()

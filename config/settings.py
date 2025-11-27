@@ -33,8 +33,10 @@ TRAMPOLINE_HEIGHT = 10
 TRAMPOLINE_WIDTH = 75
 
 FLOOR_HEIGHT = 75
+
 # Configuracion de guardado
 SCORES_FILE = "data/scores.json"
+LEVEL_FILE = "data/level.json"
 
 # Configuracion de puntajes
 TRAMPOLINE_SCORE = 10

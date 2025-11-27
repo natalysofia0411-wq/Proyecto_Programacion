@@ -12,8 +12,9 @@ from core.scenes.start_screen import StartScreen
 from core.scenes.transition_screen import TransitionScene
 from core.scenes.game_over_screen import GameOverScreen
 from core.scenes.scores_screen import ScoresScreen
+from core.scenes.pause_screen import PauseScreen
 
-from utils.helpers import save_score
+from utils.helpers import save_score, save_progress, load_progress
 
 class Game:
     """
@@ -34,8 +35,10 @@ class Game:
         self.start_screen = StartScreen(self.width, self.height)
         self.game_over_screen = GameOverScreen(self.width, self.height)
         self.scores_screen = ScoresScreen(self.width, self.height - 150)
+        self.pause_screen = PauseScreen(self.width, self.height)
         self.scene = "start"
 
+        self.initial_level_score = 0
         self.level_number = 1
         self.level = None
 
@@ -73,6 +76,16 @@ class Game:
                     self.scene = "change"
                     self.sounds["game_start"].play()
 
+                if event.key == pygame.K_l:
+                    prev_save = load_progress()
+                    if prev_save["level"] != -1:
+                        self.level_number = prev_save["level"]
+                        self.HUD.current_score = prev_save["score"]
+                        self.player.lifes = prev_save["lifes"]
+                        self.HUD.player_lifes = prev_save["lifes"]
+                        self.scene = "change"
+                        self.sounds["game_start"].play()
+
         elif self.scene == "level" and self.controls == True:
             if event.type == pygame.KEYDOWN:
                 if self.player.state in ["idle", "left", "right", "up"]:
@@ -84,6 +97,9 @@ class Game:
                 if self.player.state in ["up"]:
                     if event.key == pygame.K_DOWN:
                         self.player.move_down()
+
+                if event.key == pygame.K_ESCAPE:
+                    self.scene = "pause"
 
             if event.type == pygame.KEYUP:
                 if self.player.state in ["left", "right"]:
@@ -111,6 +127,23 @@ class Game:
                         self.HUD.current_score = 0
                         self.player.state = "idle"
                         self.player.lifes = 4
+
+        elif self.scene == "pause":
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.scene = "level"
+                if event.key == pygame.K_q:
+                    save_progress(self.level_number, self.initial_level_score, self.player.lifes)
+                    self.start_screen.load_level()
+                    self.scene = "start"
+                    self.level_number = 1
+                    self.scores_screen.current_name = "..."
+                    self.HUD.current_score = 0
+                    self.player.state = "idle"
+                    self.player.lifes = 4
+                    self.HUD.player_lifes = 4
+                    self.level = None
+                    self.block_count = 0
 
     def scroll_screen(self):
         """
@@ -242,6 +275,7 @@ class Game:
             self.player.rect.topleft = (self.width - 170, self.height - 119)
             self.player.level = self.level
             self.block_count = 0
+            self.initial_level_score = self.HUD.current_score
         else:
             self.block_count += 1
 
@@ -333,6 +367,9 @@ class Game:
         elif self.scene == "scores":
             self.scores_screen.draw(self.screen)
             self.HUD.draw(self.screen)
+
+        elif self.scene == "pause":
+            self.pause_screen.draw(self.screen)
 
     def load_sounds(self):
         """
